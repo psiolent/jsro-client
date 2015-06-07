@@ -1,0 +1,22 @@
+{
+  "name": "jsro-client",
+  "version": "0.1.0",
+  "description": "JavaScript Remote Objects Client-side Library",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/psiolent/jsro-client.git"
+  },
+  "author": "Aja Walker <aja@ajawalker.com> (http://www.ajawalker.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/psiolent/jsro-client/issues"
+  },
+  "homepage": "https://github.com/psiolent/jsro-client#readme",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-jshint": "^0.11.2"
+  }
+}
