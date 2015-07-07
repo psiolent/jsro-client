@@ -16,7 +16,10 @@
   },
   "homepage": "https://github.com/psiolent/jsro-client#readme",
   "devDependencies": {
+    "chai": "^3.0.0",
     "grunt": "^0.4.5",
-    "grunt-contrib-jshint": "^0.11.2"
+    "grunt-browserify": "^3.8.0",
+    "grunt-contrib-jshint": "^0.11.2",
+    "grunt-simple-mocha": "^0.4.0"
   }
 }

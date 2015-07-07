@@ -20,5 +20,6 @@
 	"futurehostile": true,
 	"maxlen": 80,
 	"freeze": true,
-	"newcap": false
+	"newcap": false,
+	"predef": [ "angular" ]
 }
