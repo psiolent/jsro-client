@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Uses the Angular $http service to create the expected request function.
  * @param $http the Angular HTTP service
@@ -5,8 +7,6 @@
  * @returns {Function}
  */
 function createRequestFunction($http, $q) {
-	'use strict';
-
 	function request(method, url, data) {
 		// configure the request
 		var requestConfig = {
@@ -32,12 +32,11 @@ function createRequestFunction($http, $q) {
 	return request;
 }
 
+// register the jsro angular module and service
 angular.module('jsro', []).factory('jsroService', [
 	'$http',
 	'$q',
 	function($http, $q) {
-		'use strict';
-
 		// create request and defer functions
 		var request = createRequestFunction($http, $q);
 		var defer = $q.defer;

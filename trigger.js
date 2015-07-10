@@ -15,7 +15,6 @@ module.exports.create = function() {
 	 * Registers a listener for a type of event.
 	 * @param {string} event the event type
 	 * @param {Function} fn the function to invoke to handle the event
-	 * @returns {} this trigger
 	 */
 	trigger.on = function(event, fn) {
 		if (typeof event !== 'string') {
@@ -29,8 +28,6 @@ module.exports.create = function() {
 			listeners[event] = [];
 		}
 		listeners[event].push(fn);
-
-		return trigger;
 	};
 
 	/**
@@ -38,7 +35,6 @@ module.exports.create = function() {
 	 * @param event the event to unregister for
 	 * @param [fn] if provided, the listener function to unregister; if not
 	 * provided, all listeners will be unregistered
-	 * @returns {} this trigger
 	 */
 	trigger.off = function(event, fn) {
 		if (typeof event !== 'string') {
@@ -65,15 +61,12 @@ module.exports.create = function() {
 			// unregistering all listeners for the event
 			listeners[event] = undefined;
 		}
-
-		return trigger;
 	};
 
 	/**
 	 * Fires an event.
 	 * @param {string} event the event to fire
 	 * @param {...*} arguments to pass to the event handlers
-	 * @returns {} this trigger
 	 */
 	trigger.fire = function(event) {
 		if (typeof event !== 'string') {
@@ -92,8 +85,6 @@ module.exports.create = function() {
 		listeners[event].slice(0).forEach(function(fn) {
 			fn.apply(global, args);
 		});
-
-		return trigger;
 	};
 
 	// return the trigger object
