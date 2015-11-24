@@ -46,7 +46,7 @@ module.exports.create = function() {
 
 		// do we have any listeners for this event?
 		if (!listeners[event]) {
-			return trigger;
+			return;
 		}
 
 		if (fn) {
@@ -67,6 +67,7 @@ module.exports.create = function() {
 	 * Fires an event.
 	 * @param {string} event the event to fire
 	 * @param {...*} arguments to pass to the event handlers
+	 * @returns {Object} this trigger
 	 */
 	trigger.fire = function(event) {
 		if (typeof event !== 'string') {

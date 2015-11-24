@@ -2,20 +2,22 @@
 
 /**
  * Creates and returns a new request queue instance.
- * @param defer a function to create deferred instances
+ * @param context a functionality context allowing the JSRO library to operate
+ * in whatever environment it is deployed in
  * @returns {RequestQueue}
  */
-module.exports.create = function(defer) {
-	return new RequestQueue(defer);
+module.exports.create = function(context) {
+	return new RequestQueue(context);
 };
 
 /**
  * Manages a queue of pending requests and their results.
- * @param defer a function to create deferred instances
+ * @param context a functionality context allowing the JSRO library to operate
+ * in whatever environment it is deployed in
  * @returns {RequestQueue}
  * @constructor
  */
-function RequestQueue(defer) {
+function RequestQueue(context) {
 	var self = this;
 
 	// ID to use for the next request
@@ -25,7 +27,7 @@ function RequestQueue(defer) {
 	var requestQueue = [];
 
 	// deferred request results by request ID
-	var deferredResults = {};
+	var deferredResults = [];
 
 	/**
 	 * Adds a request to the queue. The provided object will have a requestID
@@ -35,11 +37,11 @@ function RequestQueue(defer) {
 	 */
 	self.add = function(request) {
 		// create request ID and deferred result for this request
-		var deferredResult = defer();
+		var deferredResult = context.defer();
 		var requestID = nextRequestID++;
 
 		// add request ID to request
-		request.requestID = request;
+		request.requestID = requestID;
 
 		// index deferred result
 		deferredResults[requestID] = deferredResult;
@@ -84,7 +86,7 @@ function RequestQueue(defer) {
 				// resolve the deferred result with the result
 				deferredResult.resolve(result);
 			}
-			delete deferredResult[requestID];
+			delete deferredResults[requestID];
 		}
 	};
 

@@ -3,26 +3,35 @@
 /**
  * Connections module establishes connections and provides an interface for
  * managing established connections.
- * @returns {Function}
+ * @param url the base url on which to perform requests for this connection
+ * @param context a functionality context allowing the JSRO library to operate
+ * in whatever environment it is deployed in
+ * @param [pollTimeout] the poll timeout in milliseconds; if a poll
+ * request has not received a response in this amount of time, a
+ * new poll request will be issued
+ * @returns {promise} a promise for the established connection object
  */
-module.exports.establish = function(url, request, defer) {
-	return request('GET', url).then(function(data) {
+module.exports.establish = function(url, context, pollTimeout) {
+	return context.request('GET', url).then(function(data) {
 		if (typeof data.connectionID === 'undefined') {
 			throw new Error('invalid response; expected connection ID');
 		}
-		return new Connection(url, request, defer, data.connectionID);
+		return new Connection(url, context, data.connectionID, pollTimeout);
 	});
 };
 
 /**
  * A connection to a JSRO-capable server.
  * @param url the base url on which to perform requests for this connection
- * @param request a function for performing http requests
- * @param defer a function for creating deferred promise instances
+ * @param context a functionality context allowing the JSRO library to operate
+ * in whatever environment it is deployed in
  * @param connectionID the ID of this connection
+ * @param [pollTimeout] the poll timeout in milliseconds; if a poll
+ * request has not received a response in this amount of time, a
+ * new poll request will be issued
  * @constructor
  */
-function Connection(url, request, defer, connectionID) {
+function Connection(url, context, connectionID, pollTimeout) {
 	var self = this;
 
 	// normalize url (i.e. add a trailing slash if it doesn't have one)
@@ -34,7 +43,7 @@ function Connection(url, request, defer, connectionID) {
 	var connected = true;
 
 	// a queue to manage requests
-	var requests = require('./requestQueue.js').create(defer);
+	var requests = require('./requestQueue.js').create(context);
 
 	// current pending send request, if any
 	var pendingRequest;
@@ -43,7 +52,13 @@ function Connection(url, request, defer, connectionID) {
 	var instances = {};
 
 	// a poller to long poll for messages from server
-	var poller = require('./poller.js').create(url, request, onPoll, onLoss);
+	var poller = require('./poller.js').create(
+		url,
+		context,
+		connectionID,
+		pollTimeout,
+		onPoll,
+		onLoss);
 
 	// a trigger for connection related events
 	var trigger = require('./trigger.js').create();
@@ -97,7 +112,7 @@ function Connection(url, request, defer, connectionID) {
 		poller.stop();
 
 		// delete connection on server side
-		request('DELETE', url + connectionID);
+		context.request('DELETE', url + connectionID);
 	};
 
 	/**
@@ -136,29 +151,63 @@ function Connection(url, request, defer, connectionID) {
 	}
 
 	/**
-	 * Sends a request to the server.
-	 * @param request the request to send
+	 * Queues a request to be sent to the server and sends immediately if
+	 * possible.
+	 * @param req the request to queue and send
 	 * @returns {promise} a promise for the result of the request
 	 */
-	function sendRequest(request) {
-		var deferredResult = requests.add(request);
-		if (!pendingRequest) {
-			// send it now
-			pendingRequest = request(
-				'POST',
-				url + connectionID,
-				requests.drain());
-
-			// handle request failure
-			pendingRequest.then(null, function(error) {
-				onLoss(error);
-			});
-		}
+	function sendRequest(req) {
+		var deferredResult = requests.add(req);
+		sendQueuedRequests();
 		return deferredResult;
 	}
 
+	/**
+	 * Sends queued requests, if any and if not already sending.
+	 */
+	function sendQueuedRequests() {
+		if (!pendingRequest) {
+			// we can send now
+			var requestsToSend = requests.drain();
+			if (requestsToSend.length > 0) {
+				// and we have stuff to send
+				pendingRequest = context.request(
+					'POST',
+					url + connectionID,
+					requestsToSend);
+
+				// handle request result
+				pendingRequest.then(function() {
+					pendingRequest = undefined;
+					sendQueuedRequests();
+				}, function(error) {
+					pendingRequest = undefined;
+					onLoss(error);
+				});
+			}
+		}
+	}
+
+	/**
+	 * Handles the receipt of polled messages.
+	 * @param messages received messages
+     */
 	function onPoll(messages) {
-		// todo
+		messages.forEach(function(message) {
+			if (message.requestID !== undefined) {
+				// a response to a request
+				requests.handleResult(message);
+			} else if (message.event !== undefined) {
+				// an event fired from a remote object
+				var instance = instances[message.instanceID];
+				if (instance) {
+					// prepare args to pass to fire function
+					var fireArgs = message.args || [];
+					fireArgs.unshift(message.event);
+					instance.fire.apply(global, fireArgs);
+				}
+			}
+		});
 	}
 
 	/**
@@ -188,7 +237,7 @@ function Connection(url, request, defer, connectionID) {
 
 			// create an ID and a deferred result for this invocation
 			var resultID = nextResultID++;
-			var deferredResult = defer();
+			var deferredResult = context.defer();
 			deferredResults[resultID] = deferredResult;
 
 			return sendRequest({
