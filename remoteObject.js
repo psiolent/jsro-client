@@ -40,7 +40,7 @@ function RemoteObject(methods, invoke, onDestroy, control) {
 	});
 
 	// add event triggers
-	var trigger = require('./trigger.js').create();
+	var trigger = require('trigger-maker').create();
 
 	/**
 	 * Registers a listener for a type of event.

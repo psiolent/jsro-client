@@ -13,10 +13,10 @@ function Context($http, $timeout, $q) {
 	 * @param method the request method, e.g. 'GET', 'POST', etc.
 	 * @param url the url of the JSRO server
 	 * @param [data] optional data to send with the request
-     * @returns {promise} a promise for the request result; the promise
+	 * @returns {promise} a promise for the request result; the promise
 	 * will also have a function property, 'abort' which will cause
 	 * the request to be aborted
-     */
+	 */
 	this.request = function(method, url, data) {
 		// configure the request
 		var deferredTimeout = $q.defer();
@@ -46,7 +46,7 @@ function Context($http, $timeout, $q) {
 	 * @param delay the delay in milliseconds
 	 * @returns {*} a token which can be passed to clearTimeout()
 	 * to cancel the timeout
-     */
+	 */
 	this.setTimeout = function(fn, delay) {
 		return $timeout(fn, delay);
 	};
@@ -54,14 +54,14 @@ function Context($http, $timeout, $q) {
 	/**
 	 * Cancels a previously scheduled timeout.
 	 * @param token a token provided by a call to setTimeout()
-     */
+	 */
 	this.clearTimeout = function(token) {
 		$timeout.cancel(token);
 	};
 
 	/**
 	 * Creates and returns a deferred promise object.
-     */
+	 */
 	this.defer = $q.defer;
 
 	return this;
@@ -85,8 +85,8 @@ angular.module('jsro', []).factory('jsroService', [
 		 * @param [pollTimeout] the poll timeout in milliseconds; if a poll
 		 * request has not received a response in this amount of time, a
 		 * new poll request will be issued
-         * @returns {promise} a promise for a connection to the JSRO server
-         */
+		 * @returns {promise} a promise for a connection to the JSRO server
+		 */
 		function connect(url, pollTimeout) {
 			return connection.establish(url, context, pollTimeout);
 		}

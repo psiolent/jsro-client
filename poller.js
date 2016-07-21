@@ -14,13 +14,12 @@
  * @param onLoss a callback to invoke if the poll fails
  * @returns {Poller} a new active Poller instance
  */
-module.exports.create = function(
-	url,
-	context,
-	connectionID,
-	pollTimeout,
-	onPoll,
-	onLoss) {
+module.exports.create = function(url,
+								 context,
+								 connectionID,
+								 pollTimeout,
+								 onPoll,
+								 onLoss) {
 	return new Poller(url, context, connectionID, pollTimeout, onPoll, onLoss);
 };
 

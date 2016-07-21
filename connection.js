@@ -61,7 +61,7 @@ function Connection(url, context, connectionID, pollTimeout) {
 		onLoss);
 
 	// a trigger for connection related events
-	var trigger = require('./trigger.js').create();
+	var trigger = require('trigger-maker').create();
 
 	// grab remoteObject module for creating remote objects
 	var remoteObject = require('./remoteObject.js');
@@ -191,7 +191,7 @@ function Connection(url, context, connectionID, pollTimeout) {
 	/**
 	 * Handles the receipt of polled messages.
 	 * @param messages received messages
-     */
+	 */
 	function onPoll(messages) {
 		messages.forEach(function(message) {
 			if (message.requestID !== undefined) {
@@ -240,7 +240,7 @@ function Connection(url, context, connectionID, pollTimeout) {
 			var deferredResult = context.defer();
 			deferredResults[resultID] = deferredResult;
 
-			return sendRequest({
+			sendRequest({
 				action: 'invoke',
 				instanceID: instanceID,
 				method: method,
@@ -248,7 +248,7 @@ function Connection(url, context, connectionID, pollTimeout) {
 			}).then(function(result) {
 				if (!destroyed) {
 					delete deferredResults[resultID];
-					deferredResult.resolve(result);
+					deferredResult.resolve(result.result);
 				}
 			}, function(error) {
 				if (!destroyed) {
@@ -256,6 +256,8 @@ function Connection(url, context, connectionID, pollTimeout) {
 					deferredResult.reject(error);
 				}
 			});
+
+			return deferredResult.promise;
 		}
 
 		// need a function that can be invoked when the object is destroyed
